@@ -1,3 +1,4 @@
+from __future__ import print_function, division
 import numpy as np
 from mlfromscratch.utils import normalize, euclidean_distance, Plot
 from mlfromscratch.unsupervised_learning import *
@@ -21,7 +22,7 @@ class KMeans():
         self.max_iterations = max_iterations
 
     def _init_random_centroids(self, X):
-        """ Initialize the centroids as random samples """
+        """ Initialize the centroids as k random samples of X"""
         n_samples, n_features = np.shape(X)
         centroids = np.zeros((self.k, n_features))
         for i in range(self.k):
@@ -31,13 +32,13 @@ class KMeans():
 
     def _closest_centroid(self, sample, centroids):
         """ Return the index of the closest centroid to the sample """
-        closest_i = None
-        closest_distance = float("inf")
+        closest_i = 0
+        closest_dist = float('inf')
         for i, centroid in enumerate(centroids):
             distance = euclidean_distance(sample, centroid)
-            if distance < closest_distance:
+            if distance < closest_dist:
                 closest_i = i
-                closest_distance = distance
+                closest_dist = distance
         return closest_i
 
     def _create_clusters(self, centroids, X):
@@ -70,13 +71,14 @@ class KMeans():
     def predict(self, X):
         """ Do K-Means clustering and return cluster indices """
 
-        # Initialize centroids
+        # Initialize centroids as k random samples from X
         centroids = self._init_random_centroids(X)
 
         # Iterate until convergence or for max iterations
         for _ in range(self.max_iterations):
             # Assign samples to closest centroids (create clusters)
             clusters = self._create_clusters(centroids, X)
+            # Save current centroids for convergence check
             prev_centroids = centroids
             # Calculate new centroids from the clusters
             centroids = self._calculate_centroids(clusters, X)

@@ -7,9 +7,7 @@ from mlfromscratch.utils import train_test_split, standardize, to_categorical
 from mlfromscratch.utils import mean_squared_error, accuracy_score
 from mlfromscratch.deep_learning.loss_functions import SquareLoss, CrossEntropy
 from mlfromscratch.supervised_learning.decision_tree import RegressionTree
-from mlfromscratch.unsupervised_learning import PCA
 from mlfromscratch.utils.misc import bar_widgets
-from mlfromscratch.utils import Plot
 
 
 class GradientBoosting(object):
@@ -32,20 +30,15 @@ class GradientBoosting(object):
         The maximum depth of a tree.
     regression: boolean
         True or false depending on if we're doing regression or classification.
-    debug: boolean
-        True or false depending on if we wish to display the training progress.
     """
     def __init__(self, n_estimators, learning_rate, min_samples_split,
-                 min_impurity, max_depth, regression, debug):
+                 min_impurity, max_depth, regression):
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.min_samples_split = min_samples_split
         self.min_impurity = min_impurity
         self.max_depth = max_depth
-        self.init_estimate = None
         self.regression = regression
-        self.debug = debug
-        self.multipliers = []
         self.bar = progressbar.ProgressBar(widgets=bar_widgets)
         
         # Square loss for regression
@@ -66,12 +59,10 @@ class GradientBoosting(object):
 
     def fit(self, X, y):
         y_pred = np.full(np.shape(y), np.mean(y, axis=0))
-        
         for i in self.bar(range(self.n_estimators)):
-            tree = self.trees[i]
             gradient = self.loss.gradient(y, y_pred)
-            tree.fit(X, gradient)
-            update = tree.predict(X)
+            self.trees[i].fit(X, gradient)
+            update = self.trees[i].predict(X)
             # Update y prediction
             y_pred -= np.multiply(self.learning_rate, update)
 
@@ -79,7 +70,7 @@ class GradientBoosting(object):
     def predict(self, X):
         y_pred = np.array([])
         # Make predictions
-        for i, tree in enumerate(self.trees):
+        for tree in self.trees:
             update = tree.predict(X)
             update = np.multiply(self.learning_rate, update)
             y_pred = -update if not y_pred.any() else y_pred - update
@@ -100,8 +91,7 @@ class GradientBoostingRegressor(GradientBoosting):
             min_samples_split=min_samples_split, 
             min_impurity=min_var_red,
             max_depth=max_depth,
-            regression=True,
-            debug=debug)
+            regression=True)
 
 class GradientBoostingClassifier(GradientBoosting):
     def __init__(self, n_estimators=200, learning_rate=.5, min_samples_split=2,
@@ -111,8 +101,7 @@ class GradientBoostingClassifier(GradientBoosting):
             min_samples_split=min_samples_split, 
             min_impurity=min_info_gain,
             max_depth=max_depth,
-            regression=False,
-            debug=debug)
+            regression=False)
 
     def fit(self, X, y):
         y = to_categorical(y)

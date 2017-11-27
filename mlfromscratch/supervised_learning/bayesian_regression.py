@@ -1,4 +1,4 @@
-from __future__ import print_function
+from __future__ import print_function, division
 import numpy as np
 from scipy.stats import chi2, multivariate_normal
 from mlfromscratch.utils import mean_squared_error, train_test_split, polynomial_features
@@ -10,6 +10,7 @@ class BayesianRegression(object):
     be transformed to with a polynomial basis function, which allows for polynomial
     regression. Assumes Normal prior and likelihood for the weights and scaled inverse
     chi-squared prior and likelihood for the variance of the weights.
+    
     Parameters:
     -----------
     n_draws: float
